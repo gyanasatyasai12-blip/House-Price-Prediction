@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+* { font-family: 'Inter', sans-serif; }
+body { @apply bg-gray-950 text-white; }
+.glass-card { @apply bg-gray-900/60 backdrop-blur-xl border border-gray-800/50 rounded-2xl; }
+.gradient-text { @apply bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent; }
