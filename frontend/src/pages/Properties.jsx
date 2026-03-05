@@ -2,10 +2,22 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { Database, ChevronLeft, ChevronRight } from 'lucide-react'
 
+// Axios instance that always sends the JWT token
+const api = axios.create({ baseURL: 'http://localhost:5010' })
+api.interceptors.request.use(cfg => {
+  const token = localStorage.getItem('hp_token')
+  if (token) cfg.headers.Authorization = `Bearer ${token}`
+  return cfg
+})
+
 export default function Properties() {
   const [data, setData] = useState({ data: [], total: 0, page: 1, total_pages: 1 })
   const [page, setPage] = useState(1)
-  useEffect(() => { axios.get('/api/properties', { params: { page, per_page: 20 } }).then(r => setData(r.data)) }, [page])
+
+  useEffect(() => {
+    api.get('/api/properties', { params: { page, per_page: 20 } }).then(r => setData(r.data))
+  }, [page])
+
   return (
     <div className="p-8 space-y-6">
       <h1 className="text-3xl font-bold">Properties</h1>
@@ -14,7 +26,9 @@ export default function Properties() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead><tr className="border-b border-gray-800">
-              {['Location', 'Beds', 'Bath', 'Sqft', 'Year', 'Lot', 'Floors', 'Water', 'Condition', 'Price'].map(h => <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase">{h}</th>)}
+              {['Location', 'Beds', 'Bath', 'Sqft', 'Year', 'Lot', 'Floors', 'Water', 'Condition', 'Price'].map(h => (
+                <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase">{h}</th>
+              ))}
             </tr></thead>
             <tbody>
               {data.data.map(r => (
@@ -28,7 +42,9 @@ export default function Properties() {
                   <td className="px-4 py-3 text-sm">{r.floors}</td>
                   <td className="px-4 py-3 text-sm">{r.waterfront ? 'Yes' : 'No'}</td>
                   <td className="px-4 py-3 text-sm">{r.condition_grade}</td>
-                  <td className="px-4 py-3 text-sm font-semibold text-emerald-400">{r.actual_price ? `$${(r.actual_price / 1000).toFixed(0)}K` : '-'}</td>
+                  <td className="px-4 py-3 text-sm font-semibold text-emerald-400">
+                    {r.actual_price ? `$${(r.actual_price / 1000).toFixed(0)}K` : '-'}
+                  </td>
                 </tr>
               ))}
             </tbody>

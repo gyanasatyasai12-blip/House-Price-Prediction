@@ -3,10 +3,27 @@ import axios from 'axios'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { Home, DollarSign, MapPin, TrendingUp } from 'lucide-react'
 
+// Axios instance that always sends the JWT token
+const api = axios.create({ baseURL: 'http://localhost:5010' })
+api.interceptors.request.use(cfg => {
+  const token = localStorage.getItem('hp_token')
+  if (token) cfg.headers.Authorization = `Bearer ${token}`
+  return cfg
+})
+
 export default function Dashboard() {
   const [data, setData] = useState(null)
-  useEffect(() => { axios.get('/api/dashboard').then(r => setData(r.data)) }, [])
-  if (!data) return <div className="flex items-center justify-center h-full"><div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full" /></div>
+
+  useEffect(() => {
+    api.get('/api/dashboard').then(r => setData(r.data))
+  }, [])
+
+  if (!data) return (
+    <div className="flex items-center justify-center h-full">
+      <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full" />
+    </div>
+  )
+
   return (
     <div className="p-8 space-y-6">
       <h1 className="text-3xl font-bold">Dashboard</h1>
@@ -45,10 +62,22 @@ export default function Dashboard() {
         <h3 className="text-lg font-semibold mb-4">Recent Predictions</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead><tr className="border-b border-gray-800"><th className="text-left py-3 text-gray-400">Location</th><th className="text-left py-3 text-gray-400">Beds</th><th className="text-left py-3 text-gray-400">Sqft</th><th className="text-left py-3 text-gray-400">Predicted</th></tr></thead>
+            <thead>
+              <tr className="border-b border-gray-800">
+                <th className="text-left py-3 text-gray-400">Location</th>
+                <th className="text-left py-3 text-gray-400">Beds</th>
+                <th className="text-left py-3 text-gray-400">Sqft</th>
+                <th className="text-left py-3 text-gray-400">Predicted</th>
+              </tr>
+            </thead>
             <tbody>
               {data.recent_predictions?.slice(0, 8).map(r => (
-                <tr key={r.id} className="border-b border-gray-800/50"><td className="py-3">{r.location}</td><td className="py-3">{r.bedrooms}</td><td className="py-3">{r.sqft}</td><td className="py-3 font-semibold text-emerald-400">${(r.predicted_price / 1000).toFixed(0)}K</td></tr>
+                <tr key={r.id} className="border-b border-gray-800/50">
+                  <td className="py-3">{r.location}</td>
+                  <td className="py-3">{r.bedrooms}</td>
+                  <td className="py-3">{r.sqft}</td>
+                  <td className="py-3 font-semibold text-emerald-400">${(r.predicted_price / 1000).toFixed(0)}K</td>
+                </tr>
               ))}
             </tbody>
           </table>

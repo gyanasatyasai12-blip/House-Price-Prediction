@@ -3,17 +3,26 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 import { Calculator, DollarSign } from 'lucide-react'
 
+// Axios instance that always sends the JWT token
+const api = axios.create({ baseURL: 'http://localhost:5010' })
+api.interceptors.request.use(cfg => {
+  const token = localStorage.getItem('hp_token')
+  if (token) cfg.headers.Authorization = `Bearer ${token}`
+  return cfg
+})
+
 export default function Predict() {
   const [locations, setLocations] = useState([])
   const [form, setForm] = useState({ location: 'Suburb', bedrooms: 3, bathrooms: 2, sqft: 2000, year_built: 2000, lot_size: 0.5, floors: 1, waterfront: 0, condition_grade: 6 })
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
-  useEffect(() => { axios.get('/api/filters').then(r => setLocations(r.data.locations || [])) }, [])
+
+  useEffect(() => { api.get('/api/filters').then(r => setLocations(r.data.locations || [])) }, [])
 
   const handlePredict = (e) => {
     e.preventDefault()
     setLoading(true)
-    axios.post('/api/predict', form)
+    api.post('/api/predict', form)
       .then(r => { setResult(r.data); setLoading(false); toast.success('Prediction ready!') })
       .catch(() => { setLoading(false); toast.error('Prediction failed') })
   }
